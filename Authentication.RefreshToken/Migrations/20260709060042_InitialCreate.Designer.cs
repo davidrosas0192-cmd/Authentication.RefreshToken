@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Authentication.RefreshToken.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260709055001_InitialCreate")]
+    [Migration("20260709060042_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -60,7 +60,7 @@ namespace Authentication.RefreshToken.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
