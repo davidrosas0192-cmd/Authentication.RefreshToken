@@ -9,6 +9,7 @@ This project implements a RESTful ASP.NET Core 10 API with controllers, EF Core,
 - Logout endpoint revoking the current session
 - Single active session per username
 - SQL Server-backed persistence with EF Core migrations
+- Refresh tokens are hashed with HMAC-SHA256 using a server-side secret, following OWASP guidance for secure refresh-token storage
 
 ## Endpoints
 - POST /api/users

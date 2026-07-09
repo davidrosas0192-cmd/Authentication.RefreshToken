@@ -10,6 +10,7 @@ namespace Authentication.RefreshToken.Services;
 public class AuthService(ApplicationDbContext context, ITokenService tokenService, IConfiguration configuration) : IAuthService
 {
     private readonly JwtSettings _jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>() ?? new JwtSettings();
+    private readonly string _refreshTokenHashingKey = configuration["RefreshTokenHashingKey"] ?? throw new InvalidOperationException("RefreshTokenHashingKey is not configured.");
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
@@ -146,10 +147,11 @@ public class AuthService(ApplicationDbContext context, ITokenService tokenServic
         }
     }
 
-    private static string HashToken(string token)
+    private string HashToken(string token)
     {
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(token));
+        var key = Encoding.UTF8.GetBytes(_refreshTokenHashingKey);
+        using var hmac = new HMACSHA256(key);
+        var bytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(token));
         return Convert.ToHexString(bytes);
     }
 
