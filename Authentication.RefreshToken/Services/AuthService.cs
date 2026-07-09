@@ -52,12 +52,8 @@ public class AuthService(ApplicationDbContext context, ITokenService tokenServic
 
     public async Task<AuthResponse> RefreshAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var refreshTokenHash = HashToken(request.RefreshToken);
-        var session = await context.UserSessions
-            .Include(s => s.User)
-            .SingleOrDefaultAsync(s => s.RefreshTokenHash == refreshTokenHash && s.IsActive, cancellationToken);
-
-        if (session is null || session.ExpiresAt <= DateTime.UtcNow || session.RevokedAt.HasValue)
+        var session = await GetActiveSessionAsync(request.RefreshToken, cancellationToken);
+        if (session is null)
         {
             throw new UnauthorizedAccessException("Refresh token is invalid or expired.");
         }
@@ -85,6 +81,19 @@ public class AuthService(ApplicationDbContext context, ITokenService tokenServic
             newSession.ExpiresAt);
     }
 
+    public async Task<AccessTokenResponse> RefreshAccessTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        var session = await GetActiveSessionAsync(request.RefreshToken, cancellationToken);
+        if (session is null)
+        {
+            throw new UnauthorizedAccessException("Refresh token is invalid or expired.");
+        }
+
+        return new AccessTokenResponse(
+            tokenService.CreateAccessToken(session.User),
+            DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenMinutes));
+    }
+
     public async Task LogoutAsync(LogoutRequest request, CancellationToken cancellationToken)
     {
         var refreshTokenHash = HashToken(request.RefreshToken);
@@ -102,6 +111,21 @@ public class AuthService(ApplicationDbContext context, ITokenService tokenServic
 
     public Task<User?> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken)
         => context.Users.AsNoTracking().SingleOrDefaultAsync(u => u.UserName == userName, cancellationToken);
+
+    private async Task<UserSession?> GetActiveSessionAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        var refreshTokenHash = HashToken(refreshToken);
+        var session = await context.UserSessions
+            .Include(s => s.User)
+            .SingleOrDefaultAsync(s => s.RefreshTokenHash == refreshTokenHash && s.IsActive, cancellationToken);
+
+        if (session is null || session.ExpiresAt <= DateTime.UtcNow || session.RevokedAt.HasValue)
+        {
+            return null;
+        }
+
+        return session;
+    }
 
     private async Task RevokeExistingSessionsAsync(int userId, string reason, CancellationToken cancellationToken)
     {

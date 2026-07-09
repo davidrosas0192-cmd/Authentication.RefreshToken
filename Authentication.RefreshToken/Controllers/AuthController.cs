@@ -36,6 +36,20 @@ public class AuthController(IAuthService authService) : ControllerBase
         }
     }
 
+    [HttpPost("refresh-access")]
+    public async Task<ActionResult<AccessTokenResponse>> RefreshAccess([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await authService.RefreshAccessTokenAsync(request, cancellationToken);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
     {

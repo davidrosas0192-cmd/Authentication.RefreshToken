@@ -5,6 +5,7 @@ A RESTful ASP.NET Core 10 API with controllers, EF Core, JWT-based authenticatio
 ## What is included
 - User registration endpoint
 - Login, refresh, and logout endpoints
+- Dedicated access-token refresh endpoint
 - Access token and refresh token issuance
 - EF Core persistence with a local SQL Server database
 - Migrations and implementation documentation
@@ -24,4 +25,4 @@ A RESTful ASP.NET Core 10 API with controllers, EF Core, JWT-based authenticatio
    dotnet run
    ```
 
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the implementation plan and [Authentication.RefreshToken/README.md](Authentication.RefreshToken/README.md) for endpoint details.
+See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the implementation plan and [Authentication.RefreshToken/README.md](Authentication.RefreshToken/README.md) for endpoint details and usage examples.
